@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang=en><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>QuickMath</title>
+<h1>QuickMath</h1><h2>Quick-Time Math Quiz</h2><p>Type the exact answer before time runs out! Correct answers submit automatically, or press <b>Enter</b> to submit manually.<hr>
+<main>
+<section id=ss><h2>Game Configuration</h2><form id=sf>
+<fieldset><legend>Difficulty Level</legend>
+<label><input type=radio name=d value=0 checked><b>Easy</b> (Addition &amp; Subtraction, numbers 1–12)</label><br>
+<label><input type=radio name=d value=1><b>Medium</b> (+, &minus;, &times;, &divide;, moderate numbers)</label><br>
+<label><input type=radio name=d value=2><b>Hard</b> (All operations, larger numbers &amp; multi-digit)</label></fieldset><br>
+<fieldset><legend>Time Limit per Question</legend>
+<label><input type=radio name=t value=3><b>3 Seconds</b> (Blitz)</label><br>
+<label><input type=radio name=t value=5 checked><b>5 Seconds</b> (Standard)</label><br>
+<label><input type=radio name=t value=10><b>10 Seconds</b> (Relaxed)</label></fieldset><br>
+<fieldset><legend>Session Length</legend><label>Number of Questions: <select name=n><option value=5>5 Questions<option value=10 selected>10 Questions<option value=15>15 Questions<option value=20>20 Questions</select></label></fieldset><br>
+<button>Start Quiz</button></form></section>
+<section id=gs hidden>
+<fieldset><legend>Live Stats</legend><b>Question:</b> <span id=qn></span> / <span id=qt></span> | <b>Score:</b> <span id=sco></span> | <b>Streak:</b> <span id=stk></span></fieldset><br>
+<fieldset><legend>Time Remaining</legend><progress id=pr></progress><p><b id=tt></b> remaining</fieldset><br>
+<fieldset><legend>Solve This Problem</legend><h2 id=pd></h2>
+<form id=af><label><b>Your Answer:</b> <input type=number id=ai autocomplete=off inputmode=numeric required></label> <button>Submit</button></form>
+<p><small aria-live=polite>Type the exact number to advance immediately.</small></fieldset><br>
+<button type=button id=qb>Quit to Menu</button></section>
+<section id=rs hidden><h2>Quiz Complete!</h2>
+<fieldset><legend>Final Performance</legend><div id=fp></div></fieldset>
+<h3>Question Breakdown</h3>
+<table border=1 cellpadding=6 cellspacing=0><thead><tr><th>#<th>Question<th>Correct Answer<th>Your Answer<th>Time Taken<th>Result<tbody id=tb></table><br>
+<button type=button id=pa>Play Again (Same Settings)</button> <button type=button id=cs>Change Settings</button></section>
+</main>
+<footer><hr><small>Built with 100% pure semantic HTML5 &amp; Vanilla JavaScript. Zero CSS.</small></footer>
+<script>
+(()=>{
+let d,T,N,i,score,streak,best,tsum,A,P,t0,raf,live,H;
+const r=(a,b)=>a+Math.random()*(b-a+1)|0,
+sw=e=>{for(const x of[ss,gs,rs])x.hidden=x!=e},
+stop=()=>{live=0;cancelAnimationFrame(raf)},
+gen=()=>{
+const o=r(0,d?3:1);let a,b,l,h,m,n;
+if(!o){[l,h]=[[1,15],[10,50],[25,150]][d];a=r(l,h);b=r(l,h);return[a+' + '+b,a+b]}
+if(o==1){[l,h]=[[2,20],[15,75],[30,150]][d];a=r(l,h);b=d>1?r(10,120):r(d?5:1,a);return[a+' − '+b,a-b]}
+if(o==2){[l,h,m,n]=[,[2,12,2,12],[6,19,3,15]][d];a=r(l,h);b=r(m,n);return[a+' × '+b,a*b]}
+[l,h,m,n]=[,[2,12,2,12],[3,15,4,20]][d];b=r(l,h);n=r(m,n);return[b*n+' ÷ '+b,n]},
+tick=()=>{
+if(!live)return;
+const R=Math.max(0,T-performance.now()+t0),s=(R/1e3).toFixed(1)+'s';
+pr.value=R;if(tt.textContent!=s)tt.textContent=s;
+R?raf=requestAnimationFrame(tick):end(NaN,1)},
+next=()=>{
+if(i>=N){
+fp.innerHTML=`<p><b>Final Score:</b> ${score} / ${N} (${Math.round(score/N*100)}%)<p><b>Best Streak:</b> ${best}<p><b>Average Response Time:</b> ${(tsum/N).toFixed(2)}s`;
+tb.innerHTML=H.join('');return sw(rs)}
+i++;[P,A]=gen();live=1;
+qn.textContent=i;sco.textContent=score;stk.textContent=streak;
+pd.textContent=P+' = ?';ai.value='';
+pr.max=pr.value=T;tt.textContent=T/1e3+'.0s';ai.focus();
+t0=performance.now();raf=requestAnimationFrame(tick)},
+end=(v,to)=>{
+if(!live)return;
+const t=Math.min(T,performance.now()-t0)/1e3,ok=v===A;
+stop();tsum+=t;score+=ok;streak=ok?streak+1:0;best=Math.max(best,streak);
+H.push(`<tr><td>${i}<td>${P}<td>${A}<td>${to?'(No answer)':v}<td>${t.toFixed(2)}s<td><b>${ok?'Correct':to?'Time Out':'Incorrect'}</b>`);
+next()},
+go=()=>{
+const f=new FormData(sf);
+d=+f.get('d');T=f.get('t')*1e3;N=+f.get('n');
+i=score=streak=best=tsum=0;H=[];qt.textContent=N;
+sw(gs);next()};
+sf.onsubmit=e=>{e.preventDefault();go()};
+ai.oninput=()=>{live&&ai.valueAsNumber===A&&end(A)};
+af.onsubmit=e=>{e.preventDefault();const v=ai.valueAsNumber;live&&v==v&&end(v)};
+qb.onclick=()=>{stop();sw(ss)};
+pa.onclick=go;
+cs.onclick=()=>sw(ss);
+})()
+</script>
